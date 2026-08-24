@@ -1,0 +1,16 @@
+# Data ships as a tarball (see PEER.md); only the small prepared-GT cache is tracked.
+atomfind/data/*
+!atomfind/data/gt_prepared.npz
+
+# Run outputs
+atomfind_out/
+out/
+
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+
+# OS
+.DS_Store
