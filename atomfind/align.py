@@ -56,18 +56,31 @@ def load_object(path):
     if ext == ".npy":
         return np.load(path)
     raise ValueError(f"unsupported reconstruction format {ext!r} for {path!r}; "
-                     f"expected a PtychoShelves .mat or an extracted .npy")
+                     f"expected a PtychoShelves .mat, an extracted .npy, or a "
+                     f"phase .npz (see load_phase)")
 
 
 def load_phase(cfg):
-    """Load the reconstructed object -> per-layer mean-subtracted phase volume.
+    """@brief Load a reconstruction -> per-layer median-subtracted phase volume.
 
-    Accepts a PtychoShelves `.mat` or an extracted `.npy` (see load_object). Returns V
-    (nL,Ny,Nx) float, and the effective dx (A/px). dx is derived as scan_window/Nx when
-    cfg.dx is None (matches the validated overlay, generalises).
+    Accepts three forms:
+      *.mat  a PtychoShelves reconstruction  (outputs.object_roi)
+      *.npy  an extracted complex array
+      *.npz  a compressed float32 PHASE archive, key `phase`
+
+    The `.npz` form is what ships as example data. Nothing downstream uses the modulus, and
+    `np.angle` of a complex64 array returns float32 in any case, so storing the phase as
+    float32 is BIT-IDENTICAL to storing the complex object (verified: max |difference| = 0)
+    at less than half the size. Returns V (nL,Ny,Nx) float and the effective dx (A/px);
+    dx is scan_window/Nx when cfg.dx is None.
     """
-    vol = load_object(cfg.recon_vol)
-    V = np.angle(vol).astype(float)
+    if os.path.splitext(cfg.recon_vol)[1].lower() == ".npz":
+        with np.load(cfg.recon_vol) as d:
+            if "phase" not in d:
+                raise KeyError(f"{cfg.recon_vol} has no 'phase' array (found {list(d)})")
+            V = d["phase"].astype(float)
+    else:
+        V = np.angle(load_object(cfg.recon_vol)).astype(float)
     V -= np.median(V, axis=(1, 2), keepdims=True)     # remove per-layer offset
     dx = cfg.dx if cfg.dx is not None else cfg.scan_window_A / V.shape[2]
     return V, dx

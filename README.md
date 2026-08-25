@@ -69,8 +69,12 @@ in the prepared-cell frame — overlays the GT VASP directly in OVITO/VESTA),
 (`detection_overlay.png`, `z_accuracy.png`, `psf_compare.png`, `amplitude_vs_Z.png`,
 `roc_oxygen.png`), `deconvolved_vol.npy`, `uq_conformal.json` and `report.json`.
 
-**Reproducing the published result:** see [PEER.md](PEER.md) — inputs, the two commands, and
-the expected numbers with their tolerances.
+**Start here:** [INSTALL.md](INSTALL.md) is the install-and-run guide — clone, five
+dependencies, three commands, expected output. [PEER.md](PEER.md) adds the tolerances and the
+expected failure modes for an independent reproduction.
+
+This repository is self-contained: the example reconstruction (45 MB) ships in `atomfind/data/`,
+so nothing needs downloading separately.
 
 ## Modules
 | file | role |

@@ -96,7 +96,7 @@ def default_out_dir() -> str:
 class Config:
     # ---- which reconstructed volume -------------------------------------
     name: str = "NL70_coherent"
-    recon_vol: str = "NL70_new_vol.npy"       # complex64 (nL, Ny, Nx); resolved by data_path()
+    recon_vol: str = "NL70_phase.npz"         # ships in data/; resolved by data_path()
 
     # ---- calibration ----------------------------------------------------
     # In-plane object pixel. The VALIDATED overlay uses scan_window / Nx
@@ -316,7 +316,7 @@ def preset(name: str) -> Config:
         # thread we use the Pb SHAPE for every species (it's the imaging-system response;
         # the element only sets amplitude), so this is the default kernel for all atoms.
         "NL70_coherent": Config(name="NL70_coherent",
-                                recon_vol="NL70_new_vol.npy",
+                                recon_vol="NL70_phase.npz",
                                 dz=0.999, dose_e_per_A2=None,
                                 single_atom_vol="psf_Pb_NL70_vol.npy",
                                 single_atom_species=82,

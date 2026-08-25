@@ -1,6 +1,12 @@
-# Data ships as a tarball (see PEER.md); only the small prepared-GT cache is tracked.
+# The example data ships IN the repository so that reproducing the published result needs a
+# clone and nothing else (45 MB total: a compressed float32 phase archive, the two measured
+# kernels, and the prepared reference structure). The full-size complex volume and the raw
+# .vasp are NOT tracked -- they are regenerable and twice the size.
 atomfind/data/*
 !atomfind/data/gt_prepared.npz
+!atomfind/data/NL70_phase.npz
+!atomfind/data/psf_Pb_NL70_vol.npy
+!atomfind/data/psf_Ti_NL70_vol.npy
 
 # Run outputs
 atomfind_out/
