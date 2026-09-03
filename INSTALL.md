@@ -17,7 +17,7 @@ separate data download — the example reconstruction ships in this repository.
 ## 2. Install
 
 ```bash
-git clone https://github.com/<user>/atomfind.git
+git clone https://github.com/tristanmccarthy55/atomfind.git
 cd atomfind
 
 python3 -m venv venv

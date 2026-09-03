@@ -1,40 +1,56 @@
-# Reproducing the nominated result
+# Peer reproduction — run this and see if you get my numbers
 
-**The exercise: given a ptychographic reconstruction, extract the atomic positions — with
+**The exercise: given a ptychographic reconstruction, extract the atomic positions — with a
 calibrated uncertainty on each one.**
 
-One page, three commands. Everything needed is in this repository plus one data archive.
+Everything you need is in this repository. Clone it, install five dependencies, run three
+commands. No GPU, no MATLAB, no separate data download, about five minutes of compute.
 
-The simulation and the ptychographic reconstruction that produce the input need GPU hours, so
-the reconstruction is supplied as computed. **Everything downstream of it is reproduced from
-scratch**: the point of the exercise is the step from a reconstructed volume to a list of atoms.
+[INSTALL.md](INSTALL.md) is the step-by-step guide. **This file is the protocol**: what the
+inputs are, exactly which numbers you should get, how far they are allowed to drift, and the two
+failure modes you are *supposed* to see so you don't mistake them for your own mistakes.
+
+The simulation and the ptychographic reconstruction that produce the input volume need GPU
+hours, so the reconstruction is supplied as computed. Everything after it is reproduced from
+scratch — the whole point of the exercise is the step from a reconstructed volume to a list of
+atoms.
+
+**If something disagrees, please say so.** A disagreement that survives the test suite is a real
+finding and I would rather hear it than not.
 
 ---
 
 ## 1. Inputs
 
+All four ship in `atomfind/data/` — 45 MB, already in your clone, nothing to download.
+
 | File | What it is | Size |
 |---|---|---|
-| `NL70_new_vol.npy` | **the ptychographic reconstruction** — the recovered object, complex `(70, 404, 404)`, dz 0.999 Å, dx 0.0495 Å/px | 91 MB |
+| `NL70_phase.npz` | **the ptychographic reconstruction** — the recovered object's phase, `(70, 404, 404)`, dz 0.999 Å, dx 0.0495 Å/px | 42 MB |
 | `psf_Pb_NL70_vol.npy` | the measured single-lead-atom response: the forward model the fit inverts | 1.3 MB |
 | `psf_Ti_NL70_vol.npy` | the measured single-titanium response, used for species discrimination | 1.3 MB |
 | `gt_prepared.npz` | the reference structure, pre-transformed into the beam frame — **for scoring only** | 0.4 MB |
-| `PTO6_STO6_18_18_labyrinthPoscar.vasp` | the same structure, unprepared (only to rebuild the cache) | 1.4 MB |
 
-**A PtychoShelves reconstruction can be used directly.** `--recon` accepts either a raw
-`Niter<N>.mat` (read via `outputs.object_roi`) or an extracted `.npy`, so a peer with their own
-reconstruction can point the pipeline straight at it. The volume shipped here is the `.npy` form
-purely because it is 91 MB rather than 1.1 GB.
+**Why the phase and not the complex object.** Nothing in the pipeline uses the modulus, and
+`np.angle` of a complex64 array returns float32 in any case, so storing the phase as float32 is
+*bit-identical* to storing the complex volume it came from — verified, maximum difference exactly
+zero — at less than half the size. That is what lets the data live in the repository instead of
+behind a download. `python -m atomfind.make_example_data --check` re-verifies it against the
+full-size source if you have it.
 
-**What is and is not blind.** The atom finding itself uses no ground truth: it fits the volume as
-a superposition of the measured single-atom response and returns positions, species and
-per-atom intervals from the data alone. The reference structure enters at two points only, both
-after the fact — to place the recovered atoms in the model's coordinate frame for comparison, and
-to score recall, precision and coverage. Deleting it would still yield atomic positions, in the
-reconstruction's own index frame, with their uncertainties.
+**Your own reconstruction works too.** `--recon` takes a raw PtychoShelves `Niter<N>.mat` (read
+via `outputs.object_roi`), an extracted `.npy`, or a phase `.npz`. See §6.
 
-Unpack the archive anywhere and point at it with `--data-dir`, or drop the files in
-`atomfind/data/`, or set `$ATOMFIND_DATA`. There are **no absolute paths anywhere in the code**.
+**What is and is not blind.** The atom finding uses no ground truth: it fits the volume as a
+superposition of the measured single-atom response and returns positions, species and per-atom
+intervals from the data alone. The reference structure enters only afterwards, and only twice —
+to place the recovered atoms in the model's coordinate frame, and to score recall, precision and
+coverage. Delete it and you still get atomic positions with uncertainties, in the
+reconstruction's own frame.
+
+Data files are found by **name**, never by an absolute path: `$ATOMFIND_DATA` or `--data-dir`,
+then `atomfind/data/`, then `~/Desktop`. A missing file raises with the name it wanted and the
+full search path.
 
 ## 2. Install and run
 
@@ -44,9 +60,11 @@ on this problem; the results are identical either way (checked: largest relative
 across `report.json` is 1e-11, and no non-finite value reaches any export).
 
 ```bash
+git clone https://github.com/tristanmccarthy55/atomfind.git
+cd atomfind
+
 python3 -m venv venv && . venv/bin/activate
-pip install -r atomfind/requirements.txt
-tar xzf atomfind_data_v1.tar.gz -C atomfind/data/
+pip install -r requirements.txt
 
 python atomfind/test_atomfind.py                      # ~1 s, no data needed
 
@@ -61,7 +79,7 @@ things that would otherwise make a disagreement with the numbers below ambiguous
 resolver works, that the shipped ground-truth cache is intact, that the recon-to-model map
 inverts, that peak detection recovers planted atoms, and that the conformal intervals hit their
 nominal coverage. If those 17 pass and the numbers below still differ, the disagreement is real
-and worth reporting; if they fail, it is an environment problem.
+and worth telling me about; if they fail, it is an environment problem on your side.
 
 **To run it on your own reconstruction instead**, give it the reconstruction and its depth
 spacing:
@@ -91,6 +109,11 @@ per-axis 95% conformal half-widths, model σ, species confidence, and a flag mar
 lattice-constrained detections), `found_atoms.extxyz`, `uq_conformal.json` and `report.json`.
 `polarisation.py` writes `polarisation.json` / `.npz`.
 
+The axially overlapped oxygen is the one to watch: it is the oxygen sitting 1.95 Å from a
+titanium along the beam, inside the axial response, and the entire advantage of this method over
+deconvolve-then-peak-pick lives in that population (82 % against 9–26 %). If any single number
+disagrees, that is the informative one.
+
 On this input the run is deterministic and should reproduce
 
 | Quantity | Expected |
@@ -98,6 +121,7 @@ On this input the run is deterministic and should reproduce
 | atoms found | 1834 |
 | precision | 0.97 |
 | bulk recall, Pb / Ti / O | 95.6 / 96.4 / 95.5 % |
+| axially overlapped oxygen | 82 % |
 | species confusion | 1.1 % |
 | in-plane RMS accuracy | 0.032 Å |
 | depth RMS accuracy | 0.37 Å |
