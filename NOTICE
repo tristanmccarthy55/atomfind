@@ -27,7 +27,14 @@ Research Europe 1, 24 (2021)).
 
 ## Data
 
-The reference structure `PTO6_STO6_18_18_labyrinthPoscar.vasp` is a relaxed PbTiO3/SrTiO3
-supercell **provided by collaborators** and used with their agreement. It is redistributed here
-for reproduction of the published result. Please contact the authors before reusing it for an
-unrelated purpose.
+The specimen is a relaxed PbTiO3/SrTiO3 supercell (`PTO6_STO6_18_18_labyrinthPoscar.vasp`)
+**provided by collaborators** and used with their agreement.
+
+That file is **not** redistributed here. What ships in `atomfind/data/` is derived from it:
+
+- `NL70_phase.npz` — the phase of a simulated-then-reconstructed volume of that structure
+- `gt_prepared.npz` — atomic positions and species, transformed into the beam frame, used
+  only to score the located atoms
+
+Both exist so the published result can be reproduced. Please contact the authors before using
+either for an unrelated purpose, and before redistributing the underlying structure.
