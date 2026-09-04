@@ -7,6 +7,7 @@ atomfind/data/*
 !atomfind/data/NL70_phase.npz
 !atomfind/data/psf_Pb_NL70_vol.npy
 !atomfind/data/psf_Ti_NL70_vol.npy
+!atomfind/data/SHA256SUMS
 
 # Run outputs
 atomfind_out/

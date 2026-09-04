@@ -153,5 +153,12 @@ These are reported, not absorbed, and both appear in the output:
   not a localisation failure: conformal intervals are conditional on correct detection. It is
   visible in the exported cage completeness and species confidence, not in the error bars.
 
-If your numbers differ by more than the tolerances above, the most likely causes are a
-truncated download (check `sha256sum -c SHA256SUMS`) or a different reference structure.
+If your numbers differ by more than the tolerances above, the most likely causes are a corrupted
+input file or a different reference structure. The four inputs carry a checksum manifest, so the
+first is one command to rule out:
+
+```bash
+cd atomfind/data && sha256sum -c SHA256SUMS   # macOS: shasum -a 256 -c SHA256SUMS
+```
+
+All four should report `OK`.
