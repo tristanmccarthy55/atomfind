@@ -6,9 +6,29 @@ ground-truth structure via the recon↔model map (`HANDOVER.md` §3.5/§11.4). R
 **unchanged** across volumes (0.15 Å coherent NL70, 0.1 Å-binned 16-phonon dose series) —
 switch with `--preset`.
 
-**Docs:** this file is the entry point (what / run / modules). The method is in
-[METHODS.md](METHODS.md); measured numbers and open items are in [RESULTS.md](RESULTS.md);
-kernel provenance is archived in [docs/history/](docs/history/).
+### The data is in this repository — there is nothing to download
+
+`atomfind/data/` holds all four inputs, 43 MB, already in your clone:
+
+| file | | size |
+|---|---|---|
+| `NL70_phase.npz` | the ptychographic reconstruction (phase) | 40 MB |
+| `psf_Pb_NL70_vol.npy` | measured single-lead-atom response | 1.3 MB |
+| `psf_Ti_NL70_vol.npy` | measured single-titanium response | 1.3 MB |
+| `gt_prepared.npz` | reference structure in the beam frame, **scoring only** | 0.4 MB |
+
+So the whole procedure is: clone, `pip install -r requirements.txt`, run. No archive, no
+release asset, no external link. The reconstruction is stored as its float32 **phase** rather
+than the complex object — nothing downstream uses the modulus, and `np.angle` of a complex64
+array returns float32 in any case, so it is *bit-identical* to the 91 MB complex volume it came
+from (verified: maximum difference exactly zero) at less than half the size. That is what lets
+it live in git. `python -m atomfind.make_example_data --check` re-verifies it against the
+full-size source.
+
+**Docs:** [INSTALL.md](INSTALL.md) is the install-and-run guide and [PEER.md](PEER.md) the
+reproduction protocol with expected values and tolerances. This file is the technical entry
+point (what / run / modules); the method is in [METHODS.md](METHODS.md), measured numbers and
+open items in [RESULTS.md](RESULTS.md), kernel provenance in [docs/history/](docs/history/).
 
 ## The problem, and the idea
 In-plane is easy: the 100 mrad probe gives ~0.1 Å in-plane resolution (2 object pixels), so

@@ -3,10 +3,9 @@
 @brief Figure for the polarisation result: Ti-O6 off-centring recovered from the located atoms.
 
   fig_polarisation.pdf -- (a) in-plane off-centring map (located atoms vs ground truth);
-                          (b) recovered vs true off-centring, in-plane and along the beam;
-                          (d) signal-to-noise per component (true spread / propagated sigma,
-                              log axis, decision line at 1) -- the blind statement that the
-                              along-beam component is not measured.
+                          (b) recovered vs true delta_x;
+                          (c) the same along the beam, where the propagated uncertainty
+                              exceeds the entire spread of the component itself.
 
 Run:  python atomfind/paper/make_pol_fig.py   (cwd analysis/)
 Needs <out_dir>/polarisation.npz from atomfind/polarisation.py.
@@ -17,6 +16,14 @@ import numpy as np
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+
+
+def _panel(ax, lab, three_d=False, size=9):
+    """Panel letter outside the axes, above and left of the title."""
+    t = ax.text2D if three_d else ax.text
+    t(-0.06, 1.30, lab, transform=ax.transAxes, ha="left", va="top",
+      fontsize=size, clip_on=False)
+
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(os.path.dirname(HERE)))
@@ -31,6 +38,8 @@ plt.rcParams.update({
     "figure.dpi": 150, "savefig.dpi": 300,
 })
 REC, GT = "#2166ac", "#b0b4b8"
+BAD = "#d6604d"
+MIN_PER_COL = 3          # scored Ti needed before a column mean is drawn (see main())
 
 
 def main(out_dir=None):
@@ -38,29 +47,58 @@ def main(out_dir=None):
     d = np.load(os.path.join(out_dir or cfg.out_dir, "polarisation.npz"))
     ti, A, B, sig, tail = d["ti"], d["delta"], d["delta_gt"], d["sigma"], d["tail"]
 
-    fig = plt.figure(figsize=(7.4, 2.6), constrained_layout=True)
-    gs = fig.add_gridspec(1, 4, width_ratios=[1.3, 1, 1, 1.15])
+    fig = plt.figure(figsize=(6.6, 2.75), constrained_layout=True)
+    gs = fig.add_gridspec(1, 3, width_ratios=[1, 1, 1])
 
     # (a) in-plane off-centring map, averaged per atomic column so the texture is legible
     ax = fig.add_subplot(gs[0, 0])
     key = np.round(ti[:, :2] / 2.0).astype(int)
     _, inv = np.unique(key, axis=0, return_inverse=True)
+    # A column average over one or two atoms is not a column average: it carries the full
+    # single-atom off-centring instead of the depth-cancelled mean, so it draws as a long
+    # arrow with no partner wherever that one atom is a cage-error atom. Drop those columns.
+    n_col = np.bincount(inv, minlength=inv.max() + 1)
+    keep = np.where(n_col >= MIN_PER_COL)[0]
     P = np.array([[ti[inv == u, 0].mean(), ti[inv == u, 1].mean(),
                    A[inv == u, 0].mean(), A[inv == u, 1].mean(),
                    B[inv == u, 0].mean(), B[inv == u, 1].mean()]
-                  for u in range(inv.max() + 1)])
+                  for u in keep])
+    # Columns the wrong-cage tail dominates are the only ones that visibly disagree, so mark
+    # them in the same red panel (c) uses rather than letting them read as a general failure.
+    bad = np.array([tail[inv == u].mean() > 0.5 for u in keep])
+    print(f"[fig_pol] (a) {len(keep)} columns drawn of {len(n_col)} "
+          f"({(n_col < MIN_PER_COL).sum()} with < {MIN_PER_COL} scored Ti dropped); "
+          f"median |column mean| rec {np.median(np.hypot(P[:, 2], P[:, 3])):.3f} A, "
+          f"gt {np.median(np.hypot(P[:, 4], P[:, 5])):.3f} A")
+
     ax.quiver(P[:, 0], P[:, 1], P[:, 4], P[:, 5], color=GT, angles="xy",
               scale_units="xy", scale=0.10, width=0.014, label="true")
-    ax.quiver(P[:, 0], P[:, 1], P[:, 2], P[:, 3], color=REC, angles="xy",
+    ax.quiver(P[~bad, 0], P[~bad, 1], P[~bad, 2], P[~bad, 3], color=REC, angles="xy",
               scale_units="xy", scale=0.10, width=0.006, label="located atoms")
+    if bad.any():
+        ax.quiver(P[bad, 0], P[bad, 1], P[bad, 2], P[bad, 3], color=BAD, angles="xy",
+                  scale_units="xy", scale=0.10, width=0.006, label="cage error")
+    print(f"[fig_pol] (a) {int(bad.sum())} column(s) dominated by the wrong-cage tail, "
+          f"marked: {[f'({P[i,0]:.0f},{P[i,1]:.0f})' for i in np.where(bad)[0]]}")
+
     ax.set_xlabel("x (Å)"); ax.set_ylabel("y (Å)")
-    ax.set_title("(a) in-plane off-centring", fontsize=8.5)
-    ax.set_aspect("equal")
-    ax.legend(loc="lower left", framealpha=0.95, handlelength=1.0,
+    ax.set_title("in-plane off-centring", fontsize=8.5); _panel(ax, "(a)", size=8.5)
+    # square window centred on the data; the margin clears the longest drawn arrow
+    _cx = 0.5 * (P[:, 0].min() + P[:, 0].max()); _cy = 0.5 * (P[:, 1].min() + P[:, 1].max())
+    _arrow = np.hypot(P[:, 4], P[:, 5]).max() / 0.10
+    _half = 0.5 * max(P[:, 0].ptp(), P[:, 1].ptp()) + _arrow + 0.5
+    ax.set_xlim(_cx - _half, _cx + _half); ax.set_ylim(_cy - _half, _cy + _half)
+    # square BOX (so all three panels share a height and their letters line up) with the
+    # data limits free to keep the arrows undistorted
+    ax.set_aspect("equal", adjustable="datalim"); ax.set_box_aspect(1)
+    print(f"[fig_pol] (a) square window {2*_half:.1f} A, longest arrow {_arrow:.1f} A")
+    # anchored 2% inside the axes so the frame can never straddle a spine
+    ax.legend(loc="lower left", bbox_to_anchor=(0.02, 0.02), borderaxespad=0.0,
+              framealpha=1.0, edgecolor="0.8", handlelength=1.0,
               handletextpad=0.4, borderpad=0.25, fontsize=6.8)
 
     # (b,c) recovered vs true, in-plane and along the beam
-    for n, (k, lab, ttl) in enumerate([(0, r"$\delta_x$", "(b) in-plane"),
+    for n, (k, lab, ttl) in enumerate([(0, r"$\delta_x$", r"(b) in-plane $\delta_x$"),
                                        (2, r"$\delta_z$", "(c) along beam")]):
         ax = fig.add_subplot(gs[0, 1 + n])
         lo, hi = -0.55, 0.55
@@ -68,40 +106,18 @@ def main(out_dir=None):
         ax.errorbar(B[:, k], A[:, k], yerr=1.96 * sig[:, k], fmt="none",
                     ecolor="#c8d4e3", elinewidth=0.7, zorder=1)
         ax.scatter(B[~tail, k], A[~tail, k], s=5, color=REC, lw=0, zorder=2)
-        ax.scatter(B[tail, k], A[tail, k], s=11, facecolor="none", edgecolor="#d6604d",
+        ax.scatter(B[tail, k], A[tail, k], s=11, facecolor="none", edgecolor=BAD,
                    lw=0.7, zorder=3, label="cage error")
         r = np.corrcoef(A[:, k], B[:, k])[0, 1]
-        ax.set_xlim(lo, hi); ax.set_ylim(lo, hi); ax.set_aspect("equal")
+        ax.set_xlim(lo, hi); ax.set_ylim(lo, hi)
+        ax.set_aspect("equal"); ax.set_box_aspect(1)
         ax.set_xlabel(f"true {lab} (Å)", labelpad=1)
         ax.set_ylabel(f"recovered {lab} (Å)", labelpad=1)
-        ax.set_title(f"{ttl},  $r={r:.2f}$", fontsize=8.5)
+        ax.set_title(f"{ttl[4:]},  $r={r:.2f}$", fontsize=8.5); _panel(ax, ttl[:3], size=8.5)
         if n == 1:
-            ax.legend(loc="lower right", framealpha=0.95, markerscale=1.1,
+            ax.legend(loc="lower right", bbox_to_anchor=(0.98, 0.02), borderaxespad=0.0,
+                      framealpha=1.0, edgecolor="0.8", markerscale=1.1,
                       handletextpad=0.3, borderpad=0.3, fontsize=7)
-
-    # (d) is each component actually measured?  Signal-to-noise = the true spread of that
-    # component divided by the propagated sigma on it, on a log axis with the decision line
-    # at 1, so the reader is asked for no arithmetic: a bar below the line is a component
-    # whose error bar exceeds the entire signal it is meant to resolve.
-    ax = fig.add_subplot(gs[0, 3])
-    x = np.arange(3)
-    snr = np.array([B[:, k].std() / np.median(sig[:, k]) for k in range(3)])
-    ax.bar(x, snr, 0.55, color=[REC if v >= 1 else "#d6604d" for v in snr], zorder=2)
-    ax.axhline(1.0, color="#d6604d", lw=0.9, ls="--", zorder=1)
-    ax.set_yscale("log")
-    ax.set_ylim(0.15, 90); ax.set_xlim(-0.6, 2.6)
-    ax.set_xticks(x); ax.set_xticklabels([r"$\delta_x$", r"$\delta_y$", r"$\delta_z$"])
-    ax.set_ylabel("signal-to-noise", labelpad=2)
-    ax.set_title("(d) is it measured?", fontsize=8.5)
-    for xi, v in zip(x, snr):
-        if v >= 1:                       # value sits above the bar
-            ax.text(xi, v * 1.25, f"{v:.0f}", fontsize=7, ha="center",
-                    va="bottom", color=REC)
-        else:                            # short bar: value inside, verdict above
-            ax.text(xi, v * 0.78, f"{v:.2f}", fontsize=7, ha="center", va="top",
-                    color="white")
-            ax.text(xi, v * 1.22, "not measured", fontsize=6.5, ha="center",
-                    va="bottom", color="#d6604d")
 
     for ext in ("pdf", "png"):
         fig.savefig(os.path.join(FIGDIR, f"fig_polarisation.{ext}"), bbox_inches="tight")
