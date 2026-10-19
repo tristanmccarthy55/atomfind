@@ -6,7 +6,7 @@ Runs unchanged across volumes (switch with --preset). Needs numpy/scipy/h5py/mat
 
     python run_atomfind.py                       # NL70, gold PSF (default)
     python run_atomfind.py --psf all             # compare data vs synthetic
-    python run_atomfind.py --preset reviewer2 --dose 1e8
+    python run_atomfind.py --preset NL105_dosed --dose 1e8   # needs the dosed volume (not shipped)
     python run_atomfind.py --data-dir ./data --out ./out    # explicit, for a fresh machine
     python run_atomfind.py --recon Niter200.mat --dz 0.666  # a PtychoShelves output directly
 

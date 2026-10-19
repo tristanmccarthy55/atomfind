@@ -327,14 +327,15 @@ def preset(name: str) -> Config:
                                 single_atom_vol="psf_Pb_NL70_vol.npy",
                                 single_atom_species=82,
                                 ti_kernel_vol="psf_Ti_NL70_vol.npy"),
-        # TEMPLATE for the reviewer-2 data (0.1 A-binned, 16-phonon, dosed). Set recon_vol
-        # + dose when it lands; dose-MATCH the kernel (d1e8 kernel <-> 1e8 recon). dz=0.666
-        # (NL105), per docs/history/PSF_SIM_RESPONSE.md sec.4.
-        "reviewer2": Config(name="reviewer2",
-                            recon_vol="REVIEWER2_vol.npy",
-                            dz=0.666, dose_e_per_A2=1e8,
-                            single_atom_vol="psf_Pb_rev2_d1e8_vol.npy",
-                            single_atom_species=82),
+        # TEMPLATE for the dosed 105-layer data (0.1 A-binned, 16-phonon); its volume is not
+        # shipped. Set recon_vol + dose when using it; dose-MATCH the kernel (d1e8 kernel <->
+        # 1e8 recon). dz=0.666, per docs/history/PSF_SIM_RESPONSE.md sec.4, where this preset
+        # is still called "reviewer2".
+        "NL105_dosed": Config(name="NL105_dosed",
+                              recon_vol="NL105_dosed_vol.npy",
+                              dz=0.666, dose_e_per_A2=1e8,
+                              single_atom_vol="psf_Pb_rev2_d1e8_vol.npy",
+                              single_atom_species=82),
     }
     if name not in presets:
         raise KeyError(f"unknown preset {name!r}; have {list(presets)}")
