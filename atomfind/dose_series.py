@@ -5,7 +5,7 @@
 The portability benchmark -- a different reconstruction geometry (105 layers, dz 0.666,
 405x405), ~half NL70's phase amplitude, real recon noise -- run with the SAME config as
 NL70 (nothing tuned per-dose). Uses the Pb rev2 kernel for both species (the rev2 Ti/O
-kernels are broken; a data-derived kernel is worse). Measured results: RESULTS.md §4.
+kernels are broken; a data-derived kernel is worse). Measured results: the report's Table II.
 
 Usage:
     python atomfind/dose_series.py                       # all doses + the baselines
@@ -57,7 +57,7 @@ def _baselines(V, dx, al, pos, Z, olab, cfg, verbose=True):
     """@brief The deconvolve-then-peak-pick family, scored on the SAME volume as v3.
 
     Mirrors run_atomfind.py exactly (same kernels, same relative floors) so the dose
-    comparison is like-for-like with the noiseless one in RESULTS.md sec.2. This is the
+    comparison is like-for-like with the noiseless one in the report's Table I. This is the
     comparison the report calls discriminating: on noiseless data v3's oxygen margin is
     real but modest, and the claim is that it WIDENS once there is noise to survive.
 

@@ -7,7 +7,7 @@ result can confirm their environment is sane before committing to the full pipel
 tell an environment problem apart from a genuine disagreement with our numbers.
 
 The end-to-end check on the real volume is a separate, slower thing: run
-`python atomfind/run_atomfind.py --preset NL70_coherent` and compare against PEER.md.
+`python atomfind/run_atomfind.py --preset NL70_coherent` and compare against the table in README.md.
 
     python atomfind/test_atomfind.py            # all tests
     python atomfind/test_atomfind.py -v         # with tracebacks

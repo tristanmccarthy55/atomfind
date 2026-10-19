@@ -11,7 +11,7 @@ axial blur but is the image-space VIEW only -- the quantitative detector is the 
     entrance/exit planes carry huge residuals RL amplifies;
   * crop the kernel to its compact in-plane support (speed, no margin ringing).
 Iterations are capped and dose-scaled (cfg.effective_rl_iters) with a per-iteration
-divergence guard (cfg.rl_blowup_ratio). Detector-comparison numbers: RESULTS.md §2.
+divergence guard (cfg.rl_blowup_ratio). Detector-comparison numbers: the report's Table I.
 """
 from __future__ import annotations
 import numpy as np

@@ -178,7 +178,7 @@ class Config:
     # the weak species. Default is noise-relative: floor = clean_floor_k * sigma_MF,
     # sigma_MF estimated per tube by MAD over quiet voxels (see find.clean_floor_for).
     clean_floor_relative: bool = True
-    # k swept on BOTH volumes (RESULTS sec.7): recall is monotone in k on each. k=2.0 is the
+    # k swept on BOTH volumes: recall is monotone in k on each. k=2.0 is the
     # only setting meeting the dose1e10 targets (Ti 74%, confusion 13.7%) with ONE config;
     # it costs NL70 precision 0.97->0.95 while bulk O recall rises 92->96% -- a
     # precision/recall trade, not a degradation (the extra NL70 atoms are filterable via the

@@ -16,7 +16,7 @@ Two stages, deliberately kept separate:
 
 The q-table is written to JSON; applying one from another dataset assumes exchangeability,
 which is REPORTED (uncertainty_report), not assumed. Full derivation and measured VIF /
-coverage tables: RESULTS.md §6.
+coverage tables: the report's Appendix C.
 """
 from __future__ import annotations
 import json

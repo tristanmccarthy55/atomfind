@@ -13,7 +13,7 @@ export_atoms maps results to the prepared-cell physical frame using calibration 
 (not GT positions). The validator maps GT into the recon frame to score, so no GT leaks here.
 
 Method walk-through and the rationale for every stage: METHODS.md §3-§4. Measured numbers:
-RESULTS.md.
+report.json from run_atomfind.py.
 """
 from __future__ import annotations
 import numpy as np
@@ -140,7 +140,7 @@ def clean_floor_for(tube, K, cfg, dx):
     sigma is a robust MAD of the correlation over the tube's QUIET voxels (below the tube
     median: vacuum / inter-atomic space), so it tracks each volume's noise. This
     noise-relative floor is what makes the finder portable across reconstructions -- an
-    absolute floor does not transfer (RESULTS.md §7 item 1). Falls back to the absolute
+    absolute floor does not transfer. Falls back to the absolute
     floor if the estimate degenerates."""
     if not cfg.clean_floor_relative:
         return cfg.clean_floor
@@ -269,7 +269,7 @@ def refine_tube(tube, atoms, K, cfg):
     # Invert the FULL tube Fisher matrix, not the per-atom block [J_i^T J_i]^-1: the block
     # form is the bound with neighbours known exactly and understates sigma for overlapping
     # atoms (x1.4 on sigma_z for every 1.95-A Ti-O pair; 85% of atoms have a neighbour
-    # <2.5 A). Cost is negligible (<=45 atoms x 4 params). Measured VIF table: RESULTS.md §6.
+    # <2.5 A). Cost is negligible (<=45 atoms x 4 params). Measured VIF table: the report's Appendix C.
     live = [i for i in range(len(cur)) if cur[i][3] > 1e-6]
     out = []
     if not live:

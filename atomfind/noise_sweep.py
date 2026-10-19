@@ -2,14 +2,14 @@
 """@file noise_sweep.py
 @brief Noise-robustness harness: inject Gaussian noise into the phase volume, re-run the finder.
 
-Regenerates the noise table (RESULTS.md sec.3 / the report's Table D1). Everything except the
+Regenerates the noise table (the report's Table D1). Everything except the
 noise is held fixed -- same volume, same kernels, same alignment, same config -- so the only
 variable is sigma. Noise is added to the mean-subtracted PHASE volume, which is where the
 reconstruction's own noise lives, and the draw is seeded so the table is reproducible.
 
 For scale: the volume's intrinsic vacuum noise floor is sigma ~ 0.023 and an oxygen peak is
 ~0.06, so the sweep brackets the point where oxygen falls below the noise. The collapse past
-sigma ~ 0.02 is that physical limit, not a thresholding artefact -- see RESULTS.md sec.3.
+sigma ~ 0.02 is that physical limit, not a thresholding artefact -- see the report's Appendix D.
 
     python atomfind/noise_sweep.py                          # the standard ladder
     python atomfind/noise_sweep.py --sigmas 0 0.02 --seed 7

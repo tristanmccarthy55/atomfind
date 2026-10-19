@@ -2,8 +2,8 @@
 
 *(Assumes you know what a PSF, multislice electron ptychography, and Richardson–Lucy are.)*
 
-> Entry point: [README.md](README.md) (what / run / modules). Measured numbers and open
-> items: [RESULTS.md](RESULTS.md). Kernel provenance: [docs/history/](docs/history/).
+> Entry point: [README.md](README.md) (what it is, how to run it, expected numbers). Kernel
+> provenance: [docs/history/](atomfind/docs/history/).
 
 ## The model we invert
 The reconstructed phase volume is, to a good approximation, a sparse sum of identical blobs:

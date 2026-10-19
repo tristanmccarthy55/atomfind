@@ -8,8 +8,8 @@ CONTRAST (Z=8). This does not try to RESOLVE O from Ti -- it ATTRIBUTES the sign
 lattice sites: place the measured PSF at every known site in an in-plane column group and
 solve non-negative least squares for a per-site amplitude beta. beta is the detection
 statistic; beta_Pb:beta_Ti:beta_O is a calibrated amplitude-vs-Z curve. Per-group solves
-stay tiny; a constant-background basis absorbs the vacuum pedestal. Contrast numbers:
-RESULTS.md.
+stay tiny; a constant-background basis absorbs the vacuum pedestal. Contrast numbers: the
+GT-SEEDED O AMPLITUDE DETECTOR block printed by run_atomfind.py.
 """
 from __future__ import annotations
 import warnings
